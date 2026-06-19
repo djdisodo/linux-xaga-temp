@@ -24,6 +24,11 @@
 #include <linux/swiotlb.h>
 #include <linux/vmalloc.h>
 
+#include "mtk_heap.h"
+
+atomic64_t dma_heap_normal_total = ATOMIC64_INIT(0);
+EXPORT_SYMBOL_GPL(dma_heap_normal_total);
+
 struct system_heap_buffer {
 	struct dma_heap *heap;
 	struct list_head attachments;
@@ -336,7 +341,12 @@ static void system_heap_dma_buf_release(struct dma_buf *dmabuf)
 	struct system_heap_buffer *buffer = dmabuf->priv;
 	struct sg_table *table;
 	struct scatterlist *sg;
+	s64 total;
 	int i;
+
+	total = atomic64_sub_return(buffer->len, &dma_heap_normal_total);
+	if (WARN_ON_ONCE(total < 0))
+		atomic64_set(&dma_heap_normal_total, 0);
 
 	table = &buffer->sg_table;
 	for_each_sgtable_sg(table, sg, i) {
@@ -464,6 +474,8 @@ static struct dma_buf *system_heap_do_allocate(struct dma_heap *heap,
 		dma_unmap_sgtable(dma_heap_get_dev(heap), table, DMA_BIDIRECTIONAL, 0);
 	}
 
+	atomic64_add(buffer->len, &dma_heap_normal_total);
+
 	return dmabuf;
 
 free_pages:
@@ -543,6 +555,19 @@ static int __init system_heap_create(void)
 
 	return 0;
 }
+
+long mtk_dma_buf_set_name(struct dma_buf *dmabuf, const char *buf)
+{
+	return dma_buf_set_name(dmabuf, buf);
+}
+EXPORT_SYMBOL_GPL(mtk_dma_buf_set_name);
+
+int is_system_heap_dmabuf(const struct dma_buf *dmabuf)
+{
+	return dmabuf && dmabuf->ops == &system_heap_buf_ops;
+}
+EXPORT_SYMBOL_GPL(is_system_heap_dmabuf);
+
 module_init(system_heap_create);
 MODULE_LICENSE("GPL v2");
 MODULE_IMPORT_NS("DMA_BUF");
