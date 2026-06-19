@@ -154,7 +154,7 @@ static void mtk_uart_apdma_start_tx(struct mtk_chan *c)
 		mtk_uart_apdma_write(c, VFF_WPT, 0);
 		mtk_uart_apdma_write(c, VFF_INT_FLAG, VFF_TX_INT_CLR_B);
 
-		if (mtkd->support_33bits)
+		if (mtkd->support_bits > 32)
 			mtk_uart_apdma_write(c, VFF_ADDR2, upper_32_bits(d->addr));
 	}
 
@@ -201,7 +201,7 @@ static void mtk_uart_apdma_start_rx(struct mtk_chan *c)
 		mtk_uart_apdma_write(c, VFF_RPT, 0);
 		mtk_uart_apdma_write(c, VFF_INT_FLAG, VFF_RX_INT_CLR_B);
 
-		if (mtkd->support_33bits)
+		if (mtkd->support_bits > 32)
 			mtk_uart_apdma_write(c, VFF_ADDR2, upper_32_bits(d->addr));
 	}
 
@@ -257,17 +257,6 @@ static void mtk_uart_apdma_rx_handler(struct mtk_chan *c)
 	mtk_uart_apdma_write(c, VFF_RPT, wg);
 }
 
-static void mtk_uart_apdma_chan_complete_handler(struct mtk_chan *c)
-{
-	struct mtk_uart_apdma_desc *d = c->desc;
-
-	if (d) {
-		list_del(&d->vd.node);
-		vchan_cookie_complete(&d->vd);
-		c->desc = NULL;
-	}
-}
-
 static irqreturn_t mtk_uart_apdma_irq_handler(int irq, void *dev_id)
 {
 	struct dma_chan *chan = (struct dma_chan *)dev_id;
@@ -316,7 +305,7 @@ static int mtk_uart_apdma_alloc_chan_resources(struct dma_chan *chan)
 		goto err_pm;
 	}
 
-	if (mtkd->support_33bits)
+	if (mtkd->support_bits > 32)
 		mtk_uart_apdma_write(c, VFF_ADDR2, VFF_ADDR2_CLR_B);
 
 err_pm:
