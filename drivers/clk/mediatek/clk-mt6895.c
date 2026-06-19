@@ -16,6 +16,7 @@
 #include "clk-mtk.h"
 #include "clk-mux.h"
 #include "clk-gate.h"
+#include "clk-pll.h"
 
 #include <dt-bindings/clock/mt6895-clk.h>
 
@@ -334,6 +335,8 @@ static DEFINE_SPINLOCK(mt6895_clk_lock);
 
 static const struct mtk_pll_data *plls_data[PLL_SYS_NUM];
 static void __iomem *plls_base[PLL_SYS_NUM];
+
+void mt6895_pll_force_off(void);
 
 static const struct mtk_fixed_factor vlp_ck_divs[] = {
 	FACTOR(CLK_VLP_CK_SCP, "vlp_scp_ck",
@@ -2859,7 +2862,7 @@ static int clk_mt6895_pll_registration(enum subsys_id id,
 		struct platform_device *pdev,
 		int num_plls)
 {
-	struct clk_onecell_data *clk_data;
+	struct clk_hw_onecell_data *clk_data;
 	int r;
 	struct device_node *node = pdev->dev.of_node;
 
@@ -2886,7 +2889,7 @@ static int clk_mt6895_pll_registration(enum subsys_id id,
 	mtk_clk_register_plls(node, plls, num_plls,
 			clk_data);
 
-	r = of_clk_add_provider(node, of_clk_src_onecell_get, clk_data);
+	r = of_clk_add_hw_provider(node, of_clk_hw_onecell_get, clk_data);
 
 	if (r)
 		pr_err("%s(): could not register clock provider: %d\n",
@@ -2922,7 +2925,7 @@ static int clk_mt6895_mfgsc_ao_probe(struct platform_device *pdev)
 
 static int clk_mt6895_top_probe(struct platform_device *pdev)
 {
-	struct clk_onecell_data *clk_data;
+	struct clk_hw_onecell_data *clk_data;
 	int r;
 	struct device_node *node = pdev->dev.of_node;
 
@@ -2944,13 +2947,13 @@ static int clk_mt6895_top_probe(struct platform_device *pdev)
 	mtk_clk_register_factors(top_divs, ARRAY_SIZE(top_divs),
 			clk_data);
 
-	mtk_clk_register_muxes(top_muxes, ARRAY_SIZE(top_muxes), node,
+	mtk_clk_register_muxes(NULL, top_muxes, ARRAY_SIZE(top_muxes), node,
 			&mt6895_clk_lock, clk_data);
 
-	mtk_clk_register_composites(top_composites, ARRAY_SIZE(top_composites),
+	mtk_clk_register_composites(NULL, top_composites, ARRAY_SIZE(top_composites),
 			base, &mt6895_clk_lock, clk_data);
 
-	r = of_clk_add_provider(node, of_clk_src_onecell_get, clk_data);
+	r = of_clk_add_hw_provider(node, of_clk_hw_onecell_get, clk_data);
 
 	if (r)
 		pr_err("%s(): could not register clock provider: %d\n",
@@ -2965,7 +2968,7 @@ static int clk_mt6895_top_probe(struct platform_device *pdev)
 
 static int clk_mt6895_vlp_ck_probe(struct platform_device *pdev)
 {
-	struct clk_onecell_data *clk_data;
+	struct clk_hw_onecell_data *clk_data;
 	int r;
 	struct device_node *node = pdev->dev.of_node;
 
@@ -2987,10 +2990,10 @@ static int clk_mt6895_vlp_ck_probe(struct platform_device *pdev)
 	mtk_clk_register_factors(vlp_ck_divs, ARRAY_SIZE(vlp_ck_divs),
 			clk_data);
 
-	mtk_clk_register_muxes(vlp_ck_muxes, ARRAY_SIZE(vlp_ck_muxes), node,
+	mtk_clk_register_muxes(NULL, vlp_ck_muxes, ARRAY_SIZE(vlp_ck_muxes), node,
 			&mt6895_clk_lock, clk_data);
 
-	r = of_clk_add_provider(node, of_clk_src_onecell_get, clk_data);
+	r = of_clk_add_hw_provider(node, of_clk_hw_onecell_get, clk_data);
 
 	if (r)
 		pr_err("%s(): could not register clock provider: %d\n",

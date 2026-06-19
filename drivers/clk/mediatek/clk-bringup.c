@@ -5,10 +5,12 @@
 
 #include <linux/clk.h>
 #include <linux/clk-provider.h>
+#include <linux/dev_printk.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/of.h>
 #include <linux/of_platform.h>
+#include <linux/platform_device.h>
 
 static int __bring_up_enable(struct platform_device *pdev)
 {
@@ -88,9 +90,8 @@ static int bring_up_probe(struct platform_device *pdev)
 	return r;
 }
 
-static int bring_up_remove(struct platform_device *pdev)
+static void bring_up_remove(struct platform_device *pdev)
 {
-	return 0;
 }
 
 static struct platform_driver bring_up = {
