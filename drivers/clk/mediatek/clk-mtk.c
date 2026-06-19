@@ -301,6 +301,7 @@ err_out:
 
 	return ERR_PTR(ret);
 }
+EXPORT_SYMBOL(mtk_clk_register_composite);
 
 static void mtk_clk_unregister_composite(struct clk_hw *hw)
 {

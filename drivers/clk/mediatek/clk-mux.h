@@ -28,6 +28,9 @@ struct mtk_mux {
 	u32 set_ofs;
 	u32 clr_ofs;
 	u32 upd_ofs;
+	u32 hwv_set_ofs;
+	u32 hwv_clr_ofs;
+	u32 hwv_sta_ofs;
 
 	u32 hwv_set_ofs;
 	u32 hwv_clr_ofs;

@@ -187,7 +187,8 @@ int mtk_pll_set_rate(struct clk_hw *hw, unsigned long rate,
 	u32 postdiv;
 
 	mtk_pll_calc_values(pll, &pcw, &postdiv, rate, parent_rate);
-	mtk_pll_set_rate_regs(pll, pcw, postdiv);
+	if (!mtk_fh_set_rate || !mtk_fh_set_rate(pll->data->name, pcw, postdiv))
+		mtk_pll_set_rate_regs(pll, pcw, postdiv);
 
 	return 0;
 }
@@ -420,6 +421,10 @@ int mtk_clk_register_plls(struct device_node *node,
 		pr_err("%s(): ioremap failed\n", __func__);
 		return -EINVAL;
 	}
+
+	hw_voter_regmap = syscon_regmap_lookup_by_phandle(node, "hw-voter-regmap");
+	if (IS_ERR_OR_NULL(hw_voter_regmap))
+		hw_voter_regmap = NULL;
 
 	for (i = 0; i < num_plls; i++) {
 		const struct mtk_pll_data *pll = &plls[i];

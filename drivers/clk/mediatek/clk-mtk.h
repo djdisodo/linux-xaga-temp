@@ -158,7 +158,7 @@ struct mtk_composite {
 		.divider_shift = -1,					\
 		.parent_names = _parents,				\
 		.num_parents = ARRAY_SIZE(_parents),			\
-		.flags = _flags,				\
+		.flags = _flags,					\
 	}
 
 #define DIV_GATE(_id, _name, _parent, _gate_reg, _gate_shift, _div_reg,	\
@@ -267,5 +267,18 @@ void mtk_clk_pdev_remove(struct platform_device *pdev);
 int mtk_clk_simple_probe(struct platform_device *pdev);
 void mtk_clk_simple_remove(struct platform_device *pdev);
 struct regmap *mtk_clk_get_hwv_regmap(struct device_node *node);
+
+extern bool (*mtk_fh_set_rate)(const char *name, unsigned long dds, int postdiv);
+
+struct mtk_clk_desc {
+	const struct mtk_gate *clks;
+	size_t num_clks;
+};
+
+int mtk_clk_simple_probe(struct platform_device *pdev);
+extern int register_mtk_clk_notifier(struct notifier_block *nb);
+extern int unregister_mtk_clk_notifier(struct notifier_block *nb);
+extern int mtk_clk_notify(struct regmap *regmap, struct regmap *hwv_regmap,
+		const char *name, u32 ofs, u32 id, u32 shift, int event_type);
 
 #endif /* __DRV_CLK_MTK_H */
