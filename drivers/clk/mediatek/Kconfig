@@ -1137,4 +1137,80 @@ config COMMON_CLK_MT8516_AUDSYS
 	help
 	  This driver supports MediaTek MT8516 audsys clocks.
 
+config COMMON_CLK_MT6895
+	tristate "Clock driver for MediaTek MT6895"
+	depends on ARM64 || COMPILE_TEST
+	select COMMON_CLK_MEDIATEK
+	default ARCH_MEDIATEK && ARM64
+	help
+	  This driver supports MediaTek MT6895 basic clocks.
+
+config COMMON_CLK_MT6895_ADSP
+	tristate "Clock driver for MediaTek MT6895 adsp"
+	depends on COMMON_CLK_MT6895
+
+config COMMON_CLK_MT6895_CAM
+	tristate "Clock driver for MediaTek MT6895 cam"
+	depends on COMMON_CLK_MT6895
+
+config COMMON_CLK_MT6895_CCU
+	tristate "Clock driver for MediaTek MT6895 ccu"
+	depends on COMMON_CLK_MT6895
+
+config COMMON_CLK_MT6895_IMG
+	tristate "Clock driver for MediaTek MT6895 img"
+	depends on COMMON_CLK_MT6895
+
+config COMMON_CLK_MT6895_MMSYS
+	tristate "Clock driver for MediaTek MT6895 mmsys"
+	depends on COMMON_CLK_MT6895
+
+config COMMON_CLK_MT6895_PERI
+	tristate "Clock driver for MediaTek MT6895 peri"
+	depends on COMMON_CLK_MT6895
+
+config COMMON_CLK_MT6895_BUS
+	tristate "Clock driver for MediaTek MT6895 bus"
+	depends on COMMON_CLK_MT6895
+
+config COMMON_CLK_MT6895_MDPSYS
+	tristate "Clock driver for MediaTek MT6895 mdpsys"
+	depends on COMMON_CLK_MT6895
+
+config COMMON_CLK_MT6895_MFG
+	tristate "Clock driver for MediaTek MT6895 mfg"
+	depends on COMMON_CLK_MT6895
+
+config COMMON_CLK_MT6895_VCODEC
+	tristate "Clock driver for MediaTek MT6895 vcodec"
+	depends on COMMON_CLK_MT6895
+
+config COMMON_CLK_MTK_FREQ_HOPPING
+	tristate "MediaTek frequency hopping driver"
+	help
+	  Frequency hopping driver support for MediaTek SoCs.
+
+config COMMON_CLK_MTK_FREQ_HOPPING_DEBUG
+	bool "MediaTek frequency hopping debugfs"
+	default y
+	depends on DEBUG_FS && COMMON_CLK_MTK_FREQ_HOPPING
+
+config COMMON_CLK_MTK_FREQ_HOPPING_SUBSYS
+	bool "MediaTek frequency hopping controlled by subsys"
+
+config COMMON_CLK_MTK_FREQ_HOPPING_SSPM
+	bool "MediaTek frequency hopping controlled by SSPM"
+	depends on COMMON_CLK_MTK_FREQ_HOPPING && MTK_TINYSYS_SSPM_SUPPORT
+	select COMMON_CLK_MTK_FREQ_HOPPING_SUBSYS
+
+config COMMON_CLK_MTK_FREQ_HOPPING_MCUPM
+	bool "MediaTek frequency hopping controlled by MCUPM"
+	depends on COMMON_CLK_MTK_FREQ_HOPPING && MTK_TINYSYS_MCUPM_SUPPORT
+	select COMMON_CLK_MTK_FREQ_HOPPING_SUBSYS
+
+config COMMON_CLK_MTK_FREQ_HOPPING_GPUEB
+	bool "MediaTek frequency hopping controlled by GPUEB"
+	depends on COMMON_CLK_MTK_FREQ_HOPPING
+	select COMMON_CLK_MTK_FREQ_HOPPING_SUBSYS
+
 endmenu
