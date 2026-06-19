@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 obj-$(CONFIG_COMMON_CLK_MEDIATEK) += clk-common.o
-clk-common-$(CONFIG_COMMON_CLK_MEDIATEK) += clk-mtk.o clk-pll.o clk-gate.o clk-apmixed.o clk-cpumux.o reset.o clk-mux.o clkchk.o clk-fmeter.o mtk-pd-chk.o clkdbg.o
+clk-common-$(CONFIG_COMMON_CLK_MEDIATEK) += clk-mtk.o clk-pll.o clk-gate.o clk-apmixed.o clk-cpumux.o reset.o clk-mux.o
 obj-$(CONFIG_COMMON_CLK_MEDIATEK) += clk-disable-unused.o
 obj-$(CONFIG_COMMON_CLK_MEDIATEK_FHCTL) += clk-fhctl.o clk-pllfh.o
 obj-$(CONFIG_COMMON_CLK_MTK_FREQ_HOPPING) += fhctl.o
@@ -183,14 +183,6 @@ obj-$(CONFIG_COMMON_CLK_MT6895_BUS) += clk-mt6895-bus.o
 obj-$(CONFIG_COMMON_CLK_MT6895_MDPSYS) += clk-mt6895-mdpsys.o
 obj-$(CONFIG_COMMON_CLK_MT6895_MFG) += clk-mt6895-mfgcfg.o
 obj-$(CONFIG_COMMON_CLK_MT6895_VCODEC) += clk-mt6895-vcodec.o
-obj-$(CONFIG_COMMON_CLK_MT6895) += clk-chk-mt6895.o
-clk-chk-mt6895-$(CONFIG_COMMON_CLK_MT6895) += clkchk-mt6895.o
-obj-$(CONFIG_COMMON_CLK_MT6895) += clk-fmeter-mt6895.o
-clk-fmeter-mt6895-$(CONFIG_COMMON_CLK_MT6895) += clk-fmeter-mt6895.o
-obj-$(CONFIG_COMMON_CLK_MT6895) += pd-chk-mt6895.o
-pd-chk-mt6895-$(CONFIG_COMMON_CLK_MT6895) += mtk-pd-chk-mt6895.o
-obj-$(CONFIG_COMMON_CLK_MT6895) += clk-dbg-mt6895.o
-clk-dbg-mt6895-$(CONFIG_COMMON_CLK_MT6895) += clkdbg-mt6895.o
 obj-$(CONFIG_COMMON_CLK_MT8365) += clk-mt8365-apmixedsys.o clk-mt8365.o
 obj-$(CONFIG_COMMON_CLK_MT8365_APU) += clk-mt8365-apu.o
 obj-$(CONFIG_COMMON_CLK_MT8365_CAM) += clk-mt8365-cam.o

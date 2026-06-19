@@ -22,6 +22,8 @@ struct mtk_pll_div_table {
 #define HAVE_RST_BAR	BIT(0)
 #define PLL_AO		BIT(1)
 #define PLL_PARENT_EN	BIT(2)
+#define CLK_USE_HW_VOTER	BIT(3)
+#define HWV_CHK_FULL_STA	BIT(4)
 #define POSTDIV_MASK	GENMASK(2, 0)
 
 struct mtk_pll_data {
@@ -51,9 +53,16 @@ struct mtk_pll_data {
 	u32 en_reg;
 	u32 en_set_reg;
 	u32 en_clr_reg;
+	u32 hwv_set_ofs;
+	u32 hwv_clr_ofs;
+	u32 hwv_sta_ofs;
+	u32 hwv_done_ofs;
+	u32 hwv_set_sta_ofs;
+	u32 hwv_clr_sta_ofs;
 	u8 pll_en_bit; /* Assume 0, indicates BIT(0) by default */
 	u8 pcw_chg_bit;
 	u8 fenc_sta_bit;
+	u8 hwv_shift;
 };
 
 /*

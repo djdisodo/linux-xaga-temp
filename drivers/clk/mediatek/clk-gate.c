@@ -90,14 +90,6 @@ static void mtk_cg_disable(struct clk_hw *hw)
 	mtk_cg_set_bit(hw);
 }
 
-static void mtk_cg_disable_unused(struct clk_hw *hw)
-{
-	const char *c_n = clk_hw_get_name(hw);
-
-	pr_notice("disable_unused - %s\n", c_n);
-	mtk_cg_set_bit(hw);
-}
-
 static int mtk_cg_enable_inv(struct clk_hw *hw)
 {
 	mtk_cg_set_bit(hw);
@@ -148,15 +140,6 @@ static void mtk_cg_disable_no_setclr(struct clk_hw *hw)
 	mtk_cg_set_bit_no_setclr(hw);
 }
 
-static void mtk_cg_disable_unused_no_setclr(struct clk_hw *hw)
-{
-	const char *c_n = clk_hw_get_name(hw);
-
-	pr_notice("disable_unused - %s\n", c_n);
-	mtk_cg_set_bit_no_setclr(hw);
-}
-
-
 static int mtk_cg_enable_inv_no_setclr(struct clk_hw *hw)
 {
 	mtk_cg_set_bit_no_setclr(hw);
@@ -182,15 +165,24 @@ const struct clk_ops mtk_clk_gate_ops_setclr = {
 	.is_enabled	= mtk_cg_bit_is_cleared,
 	.enable		= mtk_cg_enable,
 	.disable	= mtk_cg_disable,
-	.disable_unused = mtk_cg_disable_unused,
 };
 EXPORT_SYMBOL_GPL(mtk_clk_gate_ops_setclr);
+
+const struct clk_ops mtk_clk_gate_ops_setclr_dummy = {
+	.is_enabled	= mtk_cg_bit_is_cleared,
+	.enable		= mtk_cg_enable,
+};
+EXPORT_SYMBOL_GPL(mtk_clk_gate_ops_setclr_dummy);
+
+const struct clk_ops mtk_clk_gate_ops_setclr_dummys = {
+	.is_enabled	= mtk_cg_bit_is_cleared,
+};
+EXPORT_SYMBOL_GPL(mtk_clk_gate_ops_setclr_dummys);
 
 const struct clk_ops mtk_clk_gate_ops_setclr_inv = {
 	.is_enabled	= mtk_cg_bit_is_set,
 	.enable		= mtk_cg_enable_inv,
 	.disable	= mtk_cg_disable_inv,
-	.disable_unused = mtk_cg_disable_unused_inv,
 };
 EXPORT_SYMBOL_GPL(mtk_clk_gate_ops_setclr_inv);
 
@@ -212,7 +204,6 @@ const struct clk_ops mtk_clk_gate_ops_no_setclr = {
 	.is_enabled	= mtk_cg_bit_is_cleared,
 	.enable		= mtk_cg_enable_no_setclr,
 	.disable	= mtk_cg_disable_no_setclr,
-	.disable_unused = mtk_cg_disable_unused_no_setclr,
 };
 EXPORT_SYMBOL_GPL(mtk_clk_gate_ops_no_setclr);
 
@@ -220,7 +211,6 @@ const struct clk_ops mtk_clk_gate_ops_no_setclr_inv = {
 	.is_enabled	= mtk_cg_bit_is_set,
 	.enable		= mtk_cg_enable_inv_no_setclr,
 	.disable	= mtk_cg_disable_inv_no_setclr,
-	.disable_unused = mtk_cg_disable_unused_inv_no_setclr,
 };
 EXPORT_SYMBOL_GPL(mtk_clk_gate_ops_no_setclr_inv);
 
@@ -232,8 +222,6 @@ static struct clk_hw *mtk_clk_register_gate(struct device *dev,
 	struct mtk_clk_gate *cg;
 	int ret;
 	struct clk_init_data init = {};
-
-	is_registered = false;
 
 	cg = kzalloc(sizeof(*cg), GFP_KERNEL);
 	if (!cg)

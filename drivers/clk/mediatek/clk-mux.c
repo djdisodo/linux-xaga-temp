@@ -115,10 +115,7 @@ static int mtk_clk_mux_fenc_is_enabled(struct clk_hw *hw)
 static int mtk_clk_mux_is_enabled(struct clk_hw *hw)
 {
 	struct mtk_clk_mux *mux = to_mtk_clk_mux(hw);
-	u32 val = 0;
-
-	if (!is_registered)
-		return 0;
+	u32 val;
 
 	regmap_read(mux->regmap, mux->data->mux_ofs, &val);
 
@@ -157,14 +154,28 @@ static void mtk_clk_mux_hwv_disable(struct clk_hw *hw)
 
 	regmap_read_poll_timeout_atomic(mux->regmap_hwv, mux->data->hwv_sta_ofs,
 					val, (val & BIT(mux->data->gate_shift)),
-					0, MTK_WAIT_HWV_DONE_US);
+						0, MTK_WAIT_HWV_DONE_US);
+}
+
+static int mtk_clk_mux_hwv_enable(struct clk_hw *hw)
+{
+	struct mtk_clk_mux *mux = to_mtk_clk_mux(hw);
+	u32 val;
+
+	regmap_write(mux->regmap_hwv, mux->data->hwv_set_ofs,
+		     BIT(mux->data->gate_shift));
+
+	return regmap_read_poll_timeout_atomic(mux->regmap_hwv,
+					       mux->data->hwv_sta_ofs, val,
+					       val & BIT(mux->data->gate_shift), 0,
+					       MTK_WAIT_HWV_DONE_US);
 }
 
 static u8 mtk_clk_mux_get_parent(struct clk_hw *hw)
 {
 	struct mtk_clk_mux *mux = to_mtk_clk_mux(hw);
 	u32 mask = GENMASK(mux->data->mux_width - 1, 0);
-	u32 val = 0;
+	u32 val;
 
 	regmap_read(mux->regmap, mux->data->mux_ofs, &val);
 	val = (val >> mux->data->mux_shift) & mask;
@@ -187,7 +198,7 @@ static int mtk_clk_mux_set_parent_setclr_lock(struct clk_hw *hw, u8 index)
 {
 	struct mtk_clk_mux *mux = to_mtk_clk_mux(hw);
 	u32 mask = GENMASK(mux->data->mux_width - 1, 0);
-	u32 val = 0, orig = 0;
+	u32 val, orig;
 	unsigned long flags = 0;
 
 	if (mux->lock)
@@ -231,7 +242,8 @@ static int mtk_clk_mux_determine_rate(struct clk_hw *hw,
 
 static bool mtk_clk_mux_uses_hwv(const struct clk_ops *ops)
 {
-	if (ops == &mtk_mux_gate_hwv_fenc_clr_set_upd_ops)
+	if (ops == &mtk_hwv_mux_ops ||
+	    ops == &mtk_mux_gate_hwv_fenc_clr_set_upd_ops)
 		return true;
 
 	return false;
@@ -253,6 +265,16 @@ const struct clk_ops mtk_mux_gate_clr_set_upd_ops  = {
 	.determine_rate = mtk_clk_mux_determine_rate,
 };
 EXPORT_SYMBOL_GPL(mtk_mux_gate_clr_set_upd_ops);
+
+const struct clk_ops mtk_hwv_mux_ops = {
+	.enable = mtk_clk_mux_hwv_enable,
+	.disable = mtk_clk_mux_hwv_disable,
+	.is_enabled = mtk_clk_mux_is_enabled,
+	.get_parent = mtk_clk_mux_get_parent,
+	.set_parent = mtk_clk_mux_set_parent_setclr_lock,
+	.determine_rate = mtk_clk_mux_determine_rate,
+};
+EXPORT_SYMBOL_GPL(mtk_hwv_mux_ops);
 
 const struct clk_ops mtk_mux_gate_fenc_clr_set_upd_ops = {
 	.enable = mtk_clk_mux_fenc_enable_setclr,
@@ -367,8 +389,6 @@ int mtk_clk_register_muxes(struct device *dev,
 
 		clk_data->hws[mux->id] = hw;
 	}
-
-	is_registered = true;
 
 	return 0;
 
