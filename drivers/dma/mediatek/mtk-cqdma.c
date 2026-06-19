@@ -132,6 +132,7 @@ struct mtk_cqdma_vchan {
  * @clk:                    The clock that device internal is using
  * @dma_requests:           The number of VCs the device supports to
  * @dma_channels:           The number of PCs the device supports to
+ * @dma_mask:               A mask for DMA capability
  * @vc:                     The pointer to all available VCs
  * @pc:                     The pointer to all the underlying PCs
  */
@@ -141,6 +142,7 @@ struct mtk_cqdma_device {
 
 	u32 dma_requests;
 	u32 dma_channels;
+	u32 dma_mask;
 	struct mtk_cqdma_vchan *vc;
 	struct mtk_cqdma_pchan **pc;
 };
@@ -800,6 +802,17 @@ static int mtk_cqdma_probe(struct platform_device *pdev)
 		cqdma->dma_channels = MTK_CQDMA_NR_PCHANS;
 	}
 
+	if (pdev->dev.of_node && of_property_read_u32(pdev->dev.of_node,
+						      "dma-channel-mask",
+						      &cqdma->dma_mask)) {
+		dev_info(&pdev->dev,
+			"Using 0 as missing dma-channel-mask property\n");
+	} else {
+		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(cqdma->dma_mask));
+		if (err)
+			return err;
+	}
+
 	cqdma->pc = devm_kcalloc(&pdev->dev, cqdma->dma_channels,
 				 sizeof(*cqdma->pc), GFP_KERNEL);
 	if (!cqdma->pc)
@@ -889,6 +902,12 @@ static void mtk_cqdma_remove(struct platform_device *pdev)
 	struct mtk_cqdma_vchan *vc;
 	unsigned long flags;
 	int i;
+
+	dma_async_device_unregister(&cqdma->ddev);
+	of_dma_controller_free(pdev->dev.of_node);
+
+	/* disable hardware */
+	mtk_cqdma_hw_deinit(cqdma);
 
 	/* kill VC task */
 	for (i = 0; i < cqdma->dma_requests; i++) {
